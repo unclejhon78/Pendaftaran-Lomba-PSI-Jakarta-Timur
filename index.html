@@ -22,14 +22,45 @@
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 500px;
+      max-width: 550px;
     }
     h2 {
       margin-top: 0;
       color: #333;
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
+
+    /* Styles untuk Tab Navigation */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #e0e0e0;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-size: 15px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: #007bff;
+      border-bottom-color: #007bff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Form Styles */
     .form-group {
       margin-bottom: 18px;
     }
@@ -39,7 +70,7 @@
       font-weight: 600;
       color: #444;
     }
-    input[type="text"], select, input[type="file"] {
+    input[type="text"], input[type="email"], select, input[type="file"] {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #ccc;
@@ -47,11 +78,11 @@
       font-size: 14px;
       background-color: #fff;
     }
-    input[type="text"]:focus, select:focus {
+    input[type="text"]:focus, input[type="email"]:focus, select:focus {
       border-color: #007bff;
       outline: none;
     }
-    button {
+    .btn-submit {
       width: 100%;
       padding: 12px;
       background-color: #007bff;
@@ -62,68 +93,216 @@
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.2s;
+      margin-top: 10px;
     }
-    button:hover {
+    .btn-submit:hover {
       background-color: #0056b3;
     }
-    button:disabled {
+    .btn-submit:disabled {
       background-color: #a0c4ff;
       cursor: not-allowed;
     }
-    #status {
+    .status {
       margin-top: 15px;
       text-align: center;
       font-weight: 600;
     }
     .success { color: #28a745; }
     .error { color: #dc3545; }
+
+    /* Styles Pop-up Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .modal-box h3 {
+      margin-top: 0;
+      color: #007bff;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .review-item {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .review-item strong {
+      display: inline-block;
+      width: 130px;
+      color: #555;
+    }
+    .reg-number-box {
+      background-color: #e7f3ff;
+      border: 1px dashed #007bff;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+      color: #007bff;
+      margin: 15px 0;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-cancel {
+      flex: 1;
+      padding: 10px;
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-confirm {
+      flex: 1;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-cancel:hover { background-color: #5a6268; }
+    .btn-confirm:hover { background-color: #218838; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>Form Lomba Foto DPRt </h2>
-    <form id="dataForm">
+    <h2>Form Lomba Foto DPRt</h2>
+
+    <!-- Navigation Tab -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('tab1')">Form Lomba Foto</button>
+      <button class="tab-btn" onclick="switchTab('tab2')">Form Pendaftaran KTA</button>
+    </div>
+
+    <!-- TAB 1: FORM UTAMA LAMA -->
+    <div id="tab1" class="tab-content active">
+      <form id="dataForm1">
+        <div class="form-group">
+          <label for="nama1">Nama Lengkap</label>
+          <input type="text" id="nama1" placeholder="Masukkan nama lengkap" required>
+        </div>
+
+        <div class="form-group">
+          <label for="dpc1">DPC (Kecamatan)</label>
+          <select id="dpc1" required>
+            <option value="">-- Pilih Kecamatan --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dprt1">DPRt (Kelurahan)</label>
+          <select id="dprt1" required disabled>
+            <option value="">-- Pilih DPC Terlebih Dahulu --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="foto1">Upload Foto</label>
+          <input type="file" id="foto1" accept="image/*" required>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn1">Kirim Data</button>
+      </form>
+      <div id="status1" class="status"></div>
+    </div>
+
+    <!-- TAB 2: FORM BARU SESUAI PERMINTAAN -->
+    <div id="tab2" class="tab-content">
+      <form id="dataForm2">
+        <div class="form-group">
+          <label for="nama2">Nama Lengkap</label>
+          <input type="text" id="nama2" placeholder="Masukkan nama lengkap" required>
+        </div>
+
+        <div class="form-group">
+          <label for="kta2">Nomor KTA</label>
+          <input type="text" id="kta2" placeholder="Masukkan nomor KTA" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email2">Email Aktif</label>
+          <input type="email" id="email2" placeholder="contoh@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="dpc2">Kecamatan</label>
+          <select id="dpc2" required>
+            <option value="">-- Pilih Kecamatan --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dprt2">Kelurahan</label>
+          <select id="dprt2" required disabled>
+            <option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="foto2">Upload File/Dokumen</label>
+          <input type="file" id="foto2" accept="image/*,.pdf" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Proses Pendaftaran</button>
+      </form>
+      <div id="status2" class="status"></div>
+    </div>
+
+  </div>
+
+  <!-- POPUP MODAL REVIEW DATA TAB 2 -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-box">
+      <h3>Cek Kembali Data Anda</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Pastikan seluruh informasi di bawah ini sudah benar sebelum melakukan upload data.</p>
       
-      <!-- 1. Input Nama -->
-      <div class="form-group">
-        <label for="nama">Nama Lengkap</label>
-        <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
+      <div class="reg-number-box">
+        No. Registrasi: <span id="revRegNum">-</span>
       </div>
 
-      <!-- 2. Dropdown DPC (Kecamatan Jakarta Timur) -->
-      <div class="form-group">
-        <label for="dpc">DPC (Kecamatan)</label>
-        <select id="dpc" required>
-          <option value="">-- Pilih Kecamatan --</option>
-        </select>
+      <div class="review-item"><strong>Nama Lengkap:</strong> <span id="revNama"></span></div>
+      <div class="review-item"><strong>No. KTA:</strong> <span id="revKta"></span></div>
+      <div class="review-item"><strong>Email Aktif:</strong> <span id="revEmail"></span></div>
+      <div class="review-item"><strong>Kecamatan:</strong> <span id="revDpc"></span></div>
+      <div class="review-item"><strong>Kelurahan:</strong> <span id="revDprt"></span></div>
+      <div class="review-item"><strong>Nama File:</strong> <span id="revFile"></span></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Batal & Edit</button>
+        <button type="button" class="btn-confirm" id="confirmUploadBtn">Upload Data</button>
       </div>
-
-      <!-- 3. Dropdown DPRt (Kelurahan) -->
-      <div class="form-group">
-        <label for="dprt">DPRt (Kelurahan)</label>
-        <select id="dprt" required disabled>
-          <option value="">-- Pilih DPC Terlebih Dahulu --</option>
-        </select>
-      </div>
-
-      <!-- 4. Upload Foto -->
-      <div class="form-group">
-        <label for="foto">Upload Foto</label>
-        <input type="file" id="foto" accept="image/*" required>
-      </div>
-
-      <button type="submit" id="submitBtn">Kirim Data</button>
-    </form>
-
-    <div id="status"></div>
+    </div>
   </div>
 
   <script>
-    // PASTA URL WEB APP DARI GOOGLE APPS SCRIPT DI SINI
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdzfVslGKMkQP1eg7YdngqlIovV2uw7_vx6qAZ3OxHUO5Kl0ef40Fphd1tNLaO1Jv3ww/exec";
 
-    // Data 10 Kecamatan & Kelurahan di Jakarta Timur
+    // Data Wilayah Jakarta Timur
     const dataWilayah = {
       "Cakung": ["Cakung Barat", "Cakung Timur", "Jatinegara", "Penggilingan", "Pulo Gebang", "Rawa Terate", "Ujung Menteng"],
       "Cipayung": ["Bambu Apus", "Ceger", "Cilangkap", "Cipayung", "Lubang Buaya", "Munjul", "Pondok Ranggon", "Setu"],
@@ -137,12 +316,20 @@
       "Pulo Gadung": ["Cipinang", "Jati", "Jatinegara", "Kayu Putih", "Pisangan Timur", "Pulo Gadung", "Rawamangun"]
     };
 
-    const dpcSelect = document.getElementById("dpc");
-    const dprtSelect = document.getElementById("dprt");
+    // Fungsi Tab Switch
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
 
-    // Langsung jalankan pengisian opsi DPC (Kecamatan)
-    function initDropdown() {
-      if (!dpcSelect) return;
+    // Inisialisasi Dropdown
+    function setupDropdowns(dpcId, dprtId) {
+      const dpcSelect = document.getElementById(dpcId);
+      const dprtSelect = document.getElementById(dprtId);
+
       dpcSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
       for (let dpc in dataWilayah) {
         let option = document.createElement("option");
@@ -150,49 +337,156 @@
         option.textContent = dpc;
         dpcSelect.appendChild(option);
       }
+
+      dpcSelect.addEventListener("change", function() {
+        const selectedDpc = this.value;
+        dprtSelect.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+        
+        if (selectedDpc && dataWilayah[selectedDpc]) {
+          dprtSelect.disabled = false;
+          dataWilayah[selectedDpc].forEach(function(kelurahan) {
+            let option = document.createElement("option");
+            option.value = kelurahan;
+            option.textContent = kelurahan;
+            dprtSelect.appendChild(option);
+          });
+        } else {
+          dprtSelect.disabled = true;
+          dprtSelect.innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
+        }
+      });
     }
 
-    // Eksekusi fungsi pengisian dropdown
-    initDropdown();
+    setupDropdowns("dpc1", "dprt1");
+    setupDropdowns("dpc2", "dprt2");
 
-    // Event saat Kecamatan dipilih -> mengisi Kelurahan (DPRt)
-    dpcSelect.addEventListener("change", function() {
-      const selectedDpc = this.value;
-      dprtSelect.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
-      
-      if (selectedDpc && dataWilayah[selectedDpc]) {
-        dprtSelect.disabled = false;
-        dataWilayah[selectedDpc].forEach(function(kelurahan) {
-          let option = document.createElement("option");
-          option.value = kelurahan;
-          option.textContent = kelurahan;
-          dprtSelect.appendChild(option);
-        });
+    // LOGIKA PENOMORAN OTOMATIS (HUT81RI_PSIJAKTIM_0001)
+    function generateRegistrationNumber() {
+      let currentCounter = localStorage.getItem("regCounter");
+      if (!currentCounter) {
+        currentCounter = 1;
       } else {
-        dprtSelect.disabled = true;
-        dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
+        currentCounter = parseInt(currentCounter) + 1;
       }
-    });
+      const paddedNumber = String(currentCounter).padStart(4, '0');
+      return {
+        counter: currentCounter,
+        code: `HUT81RI_PSIJAKTIM_${paddedNumber}`
+      };
+    }
 
-    // Handle Kirim Form
-    document.getElementById("dataForm").addEventListener("submit", function(e) {
+    let tempPayloadTab2 = null;
+    let pendingCounter = null;
+
+    // EVENT SUBMIT TAB 2 -> BUKA POPUP REVIEW
+    document.getElementById("dataForm2").addEventListener("submit", function(e) {
       e.preventDefault();
       
-      const submitBtn = document.getElementById("submitBtn");
-      const statusDiv = document.getElementById("status");
-      const fileInput = document.getElementById("foto");
+      const fileInput = document.getElementById("foto2");
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const regData = generateRegistrationNumber();
+      pendingCounter = regData.counter;
+
+      // Isi Data Pop-up Modal
+      document.getElementById("revRegNum").innerText = regData.code;
+      document.getElementById("revNama").innerText = document.getElementById("nama2").value;
+      document.getElementById("revKta").innerText = document.getElementById("kta2").value;
+      document.getElementById("revEmail").innerText = document.getElementById("email2").value;
+      document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
+      document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
+      document.getElementById("revFile").innerText = file.name;
+
+      // Baca File untuk Payload
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        tempPayloadTab2 = {
+          noRegister: regData.code,
+          nama: document.getElementById("nama2").value,
+          noKta: document.getElementById("kta2").value,
+          email: document.getElementById("email2").value,
+          dpc: document.getElementById("dpc2").value,
+          dprt: document.getElementById("dprt2").value,
+          fileName: file.name,
+          fileType: file.type,
+          fileData: evt.target.result
+        };
+        // Tampilkan Modal Popup
+        document.getElementById("reviewModal").classList.add("active");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function closeModal() {
+      document.getElementById("reviewModal").classList.remove("active");
+    }
+
+    // KONFIRMASI UPLOAD PADA MODAL TAB 2
+    document.getElementById("confirmUploadBtn").addEventListener("click", function() {
+      if (!tempPayloadTab2) return;
+
+      const confirmBtn = this;
+      const statusDiv = document.getElementById("status2");
+      
+      confirmBtn.disabled = true;
+      confirmBtn.innerText = "Mengirim...";
+      statusDiv.className = "status";
+      statusDiv.innerText = "Sedang mengunggah data pendaftaran...";
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify(tempPayloadTab2)
+      })
+      .then(res => res.json())
+      .then(data => {
+        closeModal();
+        if (data.status === "success" || data.result === "success") {
+          // Simpan nomor urut baru ke LocalStorage setelah berhasil
+          localStorage.setItem("regCounter", pendingCounter);
+          
+          statusDiv.className = "status success";
+          statusDiv.innerText = `Pendaftaran Berhasil! No Registrasi Anda: ${tempPayloadTab2.noRegister}`;
+          
+          document.getElementById("dataForm2").reset();
+          document.getElementById("dprt2").disabled = true;
+          document.getElementById("dprt2").innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
+        } else {
+          statusDiv.className = "status error";
+          statusDiv.innerText = "Terjadi kesalahan: " + (data.message || "Gagal menyimpan data.");
+        }
+      })
+      .catch(err => {
+        closeModal();
+        statusDiv.className = "status error";
+        statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
+        console.error(err);
+      })
+      .finally(() => {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "Upload Data";
+      });
+    });
+
+    // HANDLE KIRIM FORM TAB 1 (Sama seperti versi lama)
+    document.getElementById("dataForm1").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById("submitBtn1");
+      const statusDiv = document.getElementById("status1");
+      const fileInput = document.getElementById("foto1");
       const file = fileInput.files[0];
 
       submitBtn.disabled = true;
-      statusDiv.className = "";
+      statusDiv.className = "status";
       statusDiv.innerText = "Mengunggah foto dan menyimpan data...";
 
       const reader = new FileReader();
       reader.onload = function(evt) {
         const payload = {
-          nama: document.getElementById("nama").value,
-          dpc: dpcSelect.value,
-          dprt: dprtSelect.value,
+          nama: document.getElementById("nama1").value,
+          dpc: document.getElementById("dpc1").value,
+          dprt: document.getElementById("dprt1").value,
           fileName: file.name,
           fileType: file.type,
           fileData: evt.target.result
@@ -204,20 +498,20 @@
         })
         .then(res => res.json())
         .then(data => {
-          if (data.status === "success") {
-            statusDiv.className = "success";
+          if (data.status === "success" || data.result === "success") {
+            statusDiv.className = "status success";
             statusDiv.innerText = "Data & Foto berhasil disimpan!";
-            document.getElementById("dataForm").reset();
-            dprtSelect.disabled = true;
-            dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
+            document.getElementById("dataForm1").reset();
+            document.getElementById("dprt1").disabled = true;
+            document.getElementById("dprt1").innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
           } else {
-            statusDiv.className = "error";
-            statusDiv.innerText = "Terjadi kesalahan: " + data.message;
+            statusDiv.className = "status error";
+            statusDiv.innerText = "Terjadi kesalahan: " + (data.message || "Gagal menyimpan");
           }
         })
         .catch(err => {
-          statusDiv.className = "error";
-          statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet atau URL Apps Script Anda.";
+          statusDiv.className = "status error";
+          statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
           console.error(err);
         })
         .finally(() => {
