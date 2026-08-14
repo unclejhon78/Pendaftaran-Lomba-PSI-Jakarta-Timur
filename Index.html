@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulir Pendaftaran Jakarta Timur</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #444;
+    }
+    input[type="text"], select, input[type="file"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button:disabled {
+      background-color: #a0c4ff;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Form Input Data</h2>
+    <form id="dataForm">
+      
+      <!-- 1. Input Nama -->
+      <div class="form-group">
+        <label for="nama">Nama Lengkap</label>
+        <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
+      </div>
+
+      <!-- 2. Dropdown DPC (Kecamatan) -->
+      <div class="form-group">
+        <label for="dpc">DPC (Kecamatan)</label>
+        <select id="dpc" required>
+          <option value="">-- Pilih Kecamatan --</option>
+        </select>
+      </div>
+
+      <!-- 3. Dropdown DPRt (Kelurahan) -->
+      <div class="form-group">
+        <label for="dprt">DPRt (Kelurahan)</label>
+        <select id="dprt" required disabled>
+          <option value="">-- Pilih DPC Terlebih Dahulu --</option>
+        </select>
+      </div>
+
+      <!-- 4. Upload Foto -->
+      <div class="form-group">
+        <label for="foto">Upload Foto</label>
+        <input type="file" id="foto" accept="image/*" required>
+      </div>
+
+      <button type="submit" id="submitBtn">Kirim Data</button>
+    </form>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // PASTA URL WEB APP DARI GOOGLE APPS SCRIPT DI SINI
+    const SCRIPT_URL = https://script.google.com/macros/s/AKfycbwR5J_ApzJsn4GLNJPDFuhz1ph73HZ0q5EVKmafijzCfbRLjDjj5VcbcSueOrnqbJzOVg/exec;
+
+    // Data Kecamatan (DPC) & Kelurahan (DPRt) Jakarta Timur
+    const dataWilayah = {
+      "Cakung": ["Cakung Barat", "Cakung Timur", "Jatinegara", "Penggilingan", "Pulo Gebang", "Rawa Terate", "Ujung Menteng"],
+      "Cipayung": ["Bambu Apus", "Ceger", "Cilangkap", "Cipayung", "Lubis", "Munjul", "Pondok Ranggon", "Setu"],
+      "Ciracas": ["Cibubur", "Ciracas", "Kelapa Dua Wetan", "Rambutan", "Susukan"],
+      "Duren Sawit": ["Duren Sawit", "Pondok Bambu", "Pondok Kelapa", "Pondok Kopi", "Malaka Jaya", "Malaka Sari", "Klender"],
+      "Jatinegara": ["Bali Mester", "Bidara Cina", "Cipinang Besar Selatan", "Cipinang Besar Utara", "Cipinang Cempedak", "Cipinang Muara", "Kampung Melayu", "Rawa Bunga"],
+      "Kramat Jati": ["Balekambang", "Batu Ampar", "Cawang", "Cililitan", "Dukuh", "Kramat Jati", "Tengah"],
+      "Makasar": ["Cipinang Melayu", "Halim Perdanakusuma", "Kebon Pala", "Makasar", "Pinang Ranti"],
+      "Matraman": ["Kayu Manis", "Kebon Manggis", "Pal Meriam", "Pisangan Baru", "Utan Kayu Selatan", "Utan Kayu Utara"],
+      "Pasar Rebo": ["Baru", "Cijantung", "Kalisari", "Pekayon", "Gedong"],
+      "Pulo Gadung": ["Cipinang", "Jati", "Jatinegara", "Kayu Putih", "Pisangan Timur", "Pulo Gadung", "Rawamangun"]
+    };
+
+    const dpcSelect = document.getElementById("dpc");
+    const dprtSelect = document.getElementById("dprt");
+
+    // Populate Dropdown DPC (Kecamatan)
+    for (let dpc in dataWilayah) {
+      let option = document.createElement("option");
+      option.value = dpc;
+      option.textContent = dpc;
+      dpcSelect.appendChild(option);
+    }
+
+    // Event handler saat DPC dipilih -> Mengisi Dropdown DPRt
+    dpcSelect.addEventListener("change", function() {
+      const selectedDpc = this.value;
+      dprtSelect.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+      
+      if (selectedDpc && dataWilayah[selectedDpc]) {
+        dprtSelect.disabled = false;
+        dataWilayah[selectedDpc].forEach(function(kelurahan) {
+          let option = document.createElement("option");
+          option.value = kelurahan;
+          option.textContent = kelurahan;
+          dprtSelect.appendChild(option);
+        });
+      } else {
+        dprtSelect.disabled = true;
+        dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
+      }
+    });
+
+    // Handle Form Submission
+    document.getElementById("dataForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById("submitBtn");
+      const statusDiv = document.getElementById("status");
+      const fileInput = document.getElementById("foto");
+      const file = fileInput.files[0];
+
+      submitBtn.disabled = true;
+      statusDiv.className = "";
+      statusDiv.innerText = "Mengunggah foto dan menyimpan data...";
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const payload = {
+          nama: document.getElementById("nama").value,
+          dpc: dpcSelect.value,
+          dprt: dprtSelect.value,
+          fileName: file.name,
+          fileType: file.type,
+          fileData: evt.target.result
+        };
+
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            statusDiv.className = "success";
+            statusDiv.innerText = "Data & Foto berhasil disimpan!";
+            document.getElementById("dataForm").reset();
+            dprtSelect.disabled = true;
+            dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
+          } else {
+            statusDiv.className = "error";
+            statusDiv.innerText = "Terjadi kesalahan: " + data.message;
+          }
+        })
+        .catch(err => {
+          statusDiv.className = "error";
+          statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
+          console.error(err);
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+        });
+      };
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+
+</body>
+</html>
