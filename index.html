@@ -137,40 +137,44 @@
       "Pulo Gadung": ["Cipinang", "Jati", "Jatinegara", "Kayu Putih", "Pisangan Timur", "Pulo Gadung", "Rawamangun"]
     };
 
-    // Fungsi otomatis untuk mengisi Dropdown
-    document.addEventListener("DOMContentLoaded", function() {
-      const dpcSelect = document.getElementById("dpc");
-      const dprtSelect = document.getElementById("dprt");
+    const dpcSelect = document.getElementById("dpc");
+    const dprtSelect = document.getElementById("dprt");
 
-      // Populate Dropdown Kecamatan (DPC)
+    // Langsung jalankan pengisian opsi DPC (Kecamatan)
+    function initDropdown() {
+      if (!dpcSelect) return;
+      dpcSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
       for (let dpc in dataWilayah) {
         let option = document.createElement("option");
         option.value = dpc;
         option.textContent = dpc;
         dpcSelect.appendChild(option);
       }
+    }
 
-      // Event Listener saat Kecamatan dipilih -> Otomatis isi Kelurahan (DPRt)
-      dpcSelect.addEventListener("change", function() {
-        const selectedDpc = this.value;
-        dprtSelect.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
-        
-        if (selectedDpc && dataWilayah[selectedDpc]) {
-          dprtSelect.disabled = false;
-          dataWilayah[selectedDpc].forEach(function(kelurahan) {
-            let option = document.createElement("option");
-            option.value = kelurahan;
-            option.textContent = kelurahan;
-            dprtSelect.appendChild(option);
-          });
-        } else {
-          dprtSelect.disabled = true;
-          dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
-        }
-      });
+    // Eksekusi fungsi pengisian dropdown
+    initDropdown();
+
+    // Event saat Kecamatan dipilih -> mengisi Kelurahan (DPRt)
+    dpcSelect.addEventListener("change", function() {
+      const selectedDpc = this.value;
+      dprtSelect.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+      
+      if (selectedDpc && dataWilayah[selectedDpc]) {
+        dprtSelect.disabled = false;
+        dataWilayah[selectedDpc].forEach(function(kelurahan) {
+          let option = document.createElement("option");
+          option.value = kelurahan;
+          option.textContent = kelurahan;
+          dprtSelect.appendChild(option);
+        });
+      } else {
+        dprtSelect.disabled = true;
+        dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
+      }
     });
 
-    // Handle Form Submission
+    // Handle Kirim Form
     document.getElementById("dataForm").addEventListener("submit", function(e) {
       e.preventDefault();
       
@@ -178,8 +182,6 @@
       const statusDiv = document.getElementById("status");
       const fileInput = document.getElementById("foto");
       const file = fileInput.files[0];
-      const dpcSelect = document.getElementById("dpc");
-      const dprtSelect = document.getElementById("dprt");
 
       submitBtn.disabled = true;
       statusDiv.className = "";
@@ -215,7 +217,7 @@
         })
         .catch(err => {
           statusDiv.className = "error";
-          statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
+          statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet atau URL Apps Script Anda.";
           console.error(err);
         })
         .finally(() => {
