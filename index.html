@@ -45,6 +45,7 @@
       border: 1px solid #ccc;
       border-radius: 5px;
       font-size: 14px;
+      background-color: #fff;
     }
     input[type="text"]:focus, select:focus {
       border-color: #007bff;
@@ -90,7 +91,7 @@
         <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
       </div>
 
-      <!-- 2. Dropdown DPC (Kecamatan) -->
+      <!-- 2. Dropdown DPC (Kecamatan Jakarta Timur) -->
       <div class="form-group">
         <label for="dpc">DPC (Kecamatan)</label>
         <select id="dpc" required>
@@ -122,10 +123,10 @@
     // PASTA URL WEB APP DARI GOOGLE APPS SCRIPT DI SINI
     const SCRIPT_URL = https://script.google.com/macros/s/AKfycbwR5J_ApzJsn4GLNJPDFuhz1ph73HZ0q5EVKmafijzCfbRLjDjj5VcbcSueOrnqbJzOVg/exec;
 
-    // Data Kecamatan (DPC) & Kelurahan (DPRt) Jakarta Timur
+    // Data 10 Kecamatan & Kelurahan di Jakarta Timur
     const dataWilayah = {
       "Cakung": ["Cakung Barat", "Cakung Timur", "Jatinegara", "Penggilingan", "Pulo Gebang", "Rawa Terate", "Ujung Menteng"],
-      "Cipayung": ["Bambu Apus", "Ceger", "Cilangkap", "Cipayung", "Lubis", "Munjul", "Pondok Ranggon", "Setu"],
+      "Cipayung": ["Bambu Apus", "Ceger", "Cilangkap", "Cipayung", "Lubang Buaya", "Munjul", "Pondok Ranggon", "Setu"],
       "Ciracas": ["Cibubur", "Ciracas", "Kelapa Dua Wetan", "Rambutan", "Susukan"],
       "Duren Sawit": ["Duren Sawit", "Pondok Bambu", "Pondok Kelapa", "Pondok Kopi", "Malaka Jaya", "Malaka Sari", "Klender"],
       "Jatinegara": ["Bali Mester", "Bidara Cina", "Cipinang Besar Selatan", "Cipinang Besar Utara", "Cipinang Cempedak", "Cipinang Muara", "Kampung Melayu", "Rawa Bunga"],
@@ -136,34 +137,37 @@
       "Pulo Gadung": ["Cipinang", "Jati", "Jatinegara", "Kayu Putih", "Pisangan Timur", "Pulo Gadung", "Rawamangun"]
     };
 
-    const dpcSelect = document.getElementById("dpc");
-    const dprtSelect = document.getElementById("dprt");
+    // Fungsi otomatis untuk mengisi Dropdown
+    document.addEventListener("DOMContentLoaded", function() {
+      const dpcSelect = document.getElementById("dpc");
+      const dprtSelect = document.getElementById("dprt");
 
-    // Populate Dropdown DPC (Kecamatan)
-    for (let dpc in dataWilayah) {
-      let option = document.createElement("option");
-      option.value = dpc;
-      option.textContent = dpc;
-      dpcSelect.appendChild(option);
-    }
-
-    // Event handler saat DPC dipilih -> Mengisi Dropdown DPRt
-    dpcSelect.addEventListener("change", function() {
-      const selectedDpc = this.value;
-      dprtSelect.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
-      
-      if (selectedDpc && dataWilayah[selectedDpc]) {
-        dprtSelect.disabled = false;
-        dataWilayah[selectedDpc].forEach(function(kelurahan) {
-          let option = document.createElement("option");
-          option.value = kelurahan;
-          option.textContent = kelurahan;
-          dprtSelect.appendChild(option);
-        });
-      } else {
-        dprtSelect.disabled = true;
-        dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
+      // Populate Dropdown Kecamatan (DPC)
+      for (let dpc in dataWilayah) {
+        let option = document.createElement("option");
+        option.value = dpc;
+        option.textContent = dpc;
+        dpcSelect.appendChild(option);
       }
+
+      // Event Listener saat Kecamatan dipilih -> Otomatis isi Kelurahan (DPRt)
+      dpcSelect.addEventListener("change", function() {
+        const selectedDpc = this.value;
+        dprtSelect.innerHTML = '<option value="">-- Pilih Kelurahan --</option>';
+        
+        if (selectedDpc && dataWilayah[selectedDpc]) {
+          dprtSelect.disabled = false;
+          dataWilayah[selectedDpc].forEach(function(kelurahan) {
+            let option = document.createElement("option");
+            option.value = kelurahan;
+            option.textContent = kelurahan;
+            dprtSelect.appendChild(option);
+          });
+        } else {
+          dprtSelect.disabled = true;
+          dprtSelect.innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
+        }
+      });
     });
 
     // Handle Form Submission
@@ -174,6 +178,8 @@
       const statusDiv = document.getElementById("status");
       const fileInput = document.getElementById("foto");
       const file = fileInput.files[0];
+      const dpcSelect = document.getElementById("dpc");
+      const dprtSelect = document.getElementById("dprt");
 
       submitBtn.disabled = true;
       statusDiv.className = "";
