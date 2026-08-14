@@ -195,11 +195,11 @@
 
     <!-- Navigation Tab -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('tab1')">Form Lomba Foto DPRt</button>
-      <button class="tab-btn" onclick="switchTab('tab2')">Form Pendaftaran Peserta Lomba</button>
+      <button class="tab-btn active" onclick="switchTab(event, 'tab1')">Form Lomba Foto DPRt</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab2')">Form Pendaftaran Peserta Lomba</button>
     </div>
 
-    <!-- TAB 1: FORM UTAMA LAMA -->
+    <!-- TAB 1: FORM LOMBA FOTO -->
     <div id="tab1" class="tab-content active">
       <form id="dataForm1">
         <div class="form-group">
@@ -226,12 +226,12 @@
           <input type="file" id="foto1" accept="image/*" required>
         </div>
 
-        <button type="submit" class="btn-submit" id="submitBtn1">Kirim Data</button>
+        <button type="submit" class="btn-submit" id="submitBtn1">Kirim Data Foto</button>
       </form>
       <div id="status1" class="status"></div>
     </div>
 
-    <!-- TAB 2: FORM BARU SESUAI PERMINTAAN -->
+    <!-- TAB 2: FORM PENDAFTARAN PESERTA -->
     <div id="tab2" class="tab-content">
       <form id="dataForm2">
         <div class="form-group">
@@ -264,7 +264,7 @@
         </div>
 
         <div class="form-group">
-          <label for="foto2">Upload Foto KTA</label>
+          <label for="foto2">Upload File/Dokumen</label>
           <input type="file" id="foto2" accept="image/*,.pdf" required>
         </div>
 
@@ -278,7 +278,7 @@
   <!-- POPUP MODAL REVIEW DATA TAB 2 -->
   <div class="modal-overlay" id="reviewModal">
     <div class="modal-box">
-      <h3>Screen Shoot Sebelum Upload</h3>
+      <h3>Cek Kembali Data Anda</h3>
       <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Pastikan seluruh informasi di bawah ini sudah benar sebelum melakukan upload data.</p>
       
       <div class="reg-number-box">
@@ -300,7 +300,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdzfVslGKMkQP1eg7YdngqlIovV2uw7_vx6qAZ3OxHUO5Kl0ef40Fphd1tNLaO1Jv3ww/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD0LaqLHL5bUDMRbj8hL64cTPLwZNxv4f9E-Y6gQQKaFCzb_i0oRaJQYzy9dx2yWe-kA/exec";
 
     // Data Wilayah Jakarta Timur
     const dataWilayah = {
@@ -317,12 +317,12 @@
     };
 
     // Fungsi Tab Switch
-    function switchTab(tabId) {
+    function switchTab(evt, tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       
       document.getElementById(tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
+      evt.currentTarget.classList.add('active');
     }
 
     // Inisialisasi Dropdown
@@ -402,6 +402,7 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         tempPayloadTab2 = {
+          formType: "pendaftaran_peserta", // Penanda untuk Tab Peserta Lomba
           noRegister: regData.code,
           nama: document.getElementById("nama2").value,
           noKta: document.getElementById("kta2").value,
@@ -442,7 +443,6 @@
       .then(data => {
         closeModal();
         if (data.status === "success" || data.result === "success") {
-          // Simpan nomor urut baru ke LocalStorage setelah berhasil
           localStorage.setItem("regCounter", pendingCounter);
           
           statusDiv.className = "status success";
@@ -468,7 +468,7 @@
       });
     });
 
-    // HANDLE KIRIM FORM TAB 1 (Sama seperti versi lama)
+    // HANDLE KIRIM FORM TAB 1 (Lomba Foto)
     document.getElementById("dataForm1").addEventListener("submit", function(e) {
       e.preventDefault();
       
@@ -484,6 +484,7 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         const payload = {
+          formType: "lomba_foto", // Penanda untuk Tab Lomba Foto
           nama: document.getElementById("nama1").value,
           dpc: document.getElementById("dpc1").value,
           dprt: document.getElementById("dprt1").value,
