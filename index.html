@@ -419,29 +419,37 @@
       };
     }
 
-    // LOGIKA MENAMPILKAN TABEL PESERTA (TAB 3)
-    function renderPesertaTable() {
-      const listPeserta = JSON.parse(localStorage.getItem("listPeserta") || "[]");
-      const tbody = document.getElementById("pesertaTableBody");
-      
-      if (listPeserta.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta.</td></tr>';
-        return;
-      }
+    // LOGIKA MENAMPILKAN TABEL PESERTA DARI SPREADSHEET (REALTIME ALL DEVICES)
+function renderPesertaTable() {
+  const tbody = document.getElementById("pesertaTableBody");
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat data peserta...</td></tr>';
 
-      tbody.innerHTML = "";
-      listPeserta.forEach(item => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><strong>${item.noRegister}</strong></td>
-          <td>${item.nama}</td>
-          <td>${item.jabatan}</td>
-          <td>${item.dpc}</td>
-          <td>${item.dprt}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+  fetch(SCRIPT_URL)
+    .then(res => res.json())
+    .then(resData => {
+      if (resData.status === "success" && resData.data && resData.data.length > 0) {
+        tbody.innerHTML = "";
+        // Tampilkan data urut dari yang paling baru (di-reverse)
+        resData.data.reverse().forEach(item => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>${item.noRegister || '-'}</strong></td>
+            <td>${item.nama || '-'}</td>
+            <td>${item.jabatan || '-'}</td>
+            <td>${item.dpc || '-'}</td>
+            <td>${item.dprt || '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta terdaftar.</td></tr>';
+      }
+    })
+    .catch(err => {
+      console.error("Gagal mengambil data peserta:", err);
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Gagal memuat data dari Spreadsheet. Pastikan koneksi aman.</td></tr>';
+    });
+}
 
     let tempPayloadTab2 = null;
     let pendingCounter = null;
