@@ -259,7 +259,7 @@
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab(event, 'tab1')">Form Lomba Foto DPC</button>
       <button class="tab-btn" onclick="switchTab(event, 'tab2')">Form Pendaftaran Peserta</button>
-      <button class="tab-btn" onclick="switchTab(event, 'tab3')">List Peserta Lomba</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab3')">List Data Peserta</button>
     </div>
 
     <!-- TAB 1: FORM LOMBA FOTO -->
@@ -319,7 +319,7 @@
       <div id="status2" class="status"></div>
     </div>
 
-    <!-- TAB 3: LIST PESERTA LOMBA -->
+    <!-- TAB 3: LIST Data Peserta -->
     <div id="tab3" class="tab-content">
       <h3 style="margin-top:0; color:#444; font-size: 16px;">Daftar Peserta Terdaftar</h3>
       
@@ -341,7 +341,7 @@
           </thead>
           <tbody id="pesertaTableBody">
             <tr>
-              <td colspan="5" style="text-align: center; color: #888;">Memuat Peserta Lomba...</td>
+              <td colspan="5" style="text-align: center; color: #888;">Memuat Data Peserta...</td>
             </tr>
           </tbody>
         </table>
@@ -476,10 +476,10 @@
       };
     }
 
-    // FUNGSI UTAMA FETCH Peserta Lomba DARI SPREADSHEET
+    // FUNGSI UTAMA FETCH Data Peserta DARI SPREADSHEET
     function fetchPesertaData() {
       const tbody = document.getElementById("pesertaTableBody");
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat Peserta Lomba...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat Data Peserta...</td></tr>';
 
       fetch(SCRIPT_URL, {
         method: "GET",
@@ -495,12 +495,12 @@
           } else {
             rawPesertaData = [];
             filteredPesertaData = [];
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada Peserta Lomba terdaftar.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada Data Peserta terdaftar.</td></tr>';
             updatePaginationControls();
           }
         })
         .catch(err => {
-          console.error("Gagal mengambil Peserta Lomba:", err);
+          console.error("Gagal mengambil Data Peserta:", err);
           tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Gagal memuat data dari Spreadsheet. Pastikan Deploy Web App disetting "Anyone".</td></tr>';
         });
     }
