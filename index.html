@@ -424,12 +424,16 @@ function renderPesertaTable() {
   const tbody = document.getElementById("pesertaTableBody");
   tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat data peserta...</td></tr>';
 
-  fetch(SCRIPT_URL)
+  // Google Apps Script melakukan redirect 302 saat merespons GET, redirect: "follow" wajib ada
+  fetch(SCRIPT_URL, {
+    method: "GET",
+    redirect: "follow"
+  })
     .then(res => res.json())
     .then(resData => {
       if (resData.status === "success" && resData.data && resData.data.length > 0) {
         tbody.innerHTML = "";
-        // Tampilkan data urut dari yang paling baru (di-reverse)
+        // Tampilkan dari data terbaru (reverse)
         resData.data.reverse().forEach(item => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
@@ -447,7 +451,7 @@ function renderPesertaTable() {
     })
     .catch(err => {
       console.error("Gagal mengambil data peserta:", err);
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Gagal memuat data dari Spreadsheet. Pastikan koneksi aman.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Gagal memuat data dari Spreadsheet. Pastikan Deploy Web App disetting "Anyone".</td></tr>';
     });
 }
 
