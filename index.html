@@ -195,7 +195,7 @@
 
     <!-- Navigation Tab -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab(event, 'tab1')">Form Lomba Foto DPRt</button>
+      <button class="tab-btn active" onclick="switchTab(event, 'tab1')">Form Lomba Foto DPC</button>
       <button class="tab-btn" onclick="switchTab(event, 'tab2')">Form Pendaftaran Peserta Lomba</button>
     </div>
 
@@ -240,13 +240,8 @@
         </div>
 
         <div class="form-group">
-          <label for="kta2">Nomor KTA</label>
-          <input type="text" id="kta2" placeholder="Masukkan nomor KTA" required>
-        </div>
-
-        <div class="form-group">
-          <label for="email2">Email Aktif</label>
-          <input type="email" id="email2" placeholder="contoh@email.com" required>
+          <label for="kta2">JABATAN</label>
+          <input type="text" id="kta2" placeholder="Masukkan Jabatan Pengurus" required>
         </div>
 
         <div class="form-group">
@@ -263,11 +258,6 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label for="foto2">Upload File/Dokumen</label>
-          <input type="file" id="foto2" accept="image/*,.pdf" required>
-        </div>
-
         <button type="submit" class="btn-submit">Proses Pendaftaran</button>
       </form>
       <div id="status2" class="status"></div>
@@ -279,7 +269,7 @@
   <div class="modal-overlay" id="reviewModal">
     <div class="modal-box">
       <h3>Cek Kembali Data Anda</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Pastikan seluruh informasi di bawah ini sudah benar sebelum melakukan upload data.</p>
+      <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Pastikan seluruh informasi di bawah ini sudah benar sebelum mengirimkan data.</p>
       
       <div class="reg-number-box">
         No. Registrasi: <span id="revRegNum">-</span>
@@ -287,14 +277,12 @@
 
       <div class="review-item"><strong>Nama Lengkap:</strong> <span id="revNama"></span></div>
       <div class="review-item"><strong>No. KTA:</strong> <span id="revKta"></span></div>
-      <div class="review-item"><strong>Email Aktif:</strong> <span id="revEmail"></span></div>
       <div class="review-item"><strong>Kecamatan:</strong> <span id="revDpc"></span></div>
       <div class="review-item"><strong>Kelurahan:</strong> <span id="revDprt"></span></div>
-      <div class="review-item"><strong>Nama File:</strong> <span id="revFile"></span></div>
 
       <div class="modal-actions">
         <button type="button" class="btn-cancel" onclick="closeModal()">Batal & Edit</button>
-        <button type="button" class="btn-confirm" id="confirmUploadBtn">Upload Data</button>
+        <button type="button" class="btn-confirm" id="confirmUploadBtn">Kirim Data</button>
       </div>
     </div>
   </div>
@@ -381,10 +369,6 @@
     // EVENT SUBMIT TAB 2 -> BUKA POPUP REVIEW
     document.getElementById("dataForm2").addEventListener("submit", function(e) {
       e.preventDefault();
-      
-      const fileInput = document.getElementById("foto2");
-      const file = fileInput.files[0];
-      if (!file) return;
 
       const regData = generateRegistrationNumber();
       pendingCounter = regData.counter;
@@ -393,30 +377,21 @@
       document.getElementById("revRegNum").innerText = regData.code;
       document.getElementById("revNama").innerText = document.getElementById("nama2").value;
       document.getElementById("revKta").innerText = document.getElementById("kta2").value;
-      document.getElementById("revEmail").innerText = document.getElementById("email2").value;
       document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
       document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
-      document.getElementById("revFile").innerText = file.name;
 
-      // Baca File untuk Payload
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        tempPayloadTab2 = {
-          formType: "pendaftaran_peserta", // Penanda untuk Tab Peserta Lomba
-          noRegister: regData.code,
-          nama: document.getElementById("nama2").value,
-          noKta: document.getElementById("kta2").value,
-          email: document.getElementById("email2").value,
-          dpc: document.getElementById("dpc2").value,
-          dprt: document.getElementById("dprt2").value,
-          fileName: file.name,
-          fileType: file.type,
-          fileData: evt.target.result
-        };
-        // Tampilkan Modal Popup
-        document.getElementById("reviewModal").classList.add("active");
+      // Buat Payload tanpa File & Email
+      tempPayloadTab2 = {
+        formType: "pendaftaran_peserta", // Penanda untuk Tab Peserta Lomba
+        noRegister: regData.code,
+        nama: document.getElementById("nama2").value,
+        noKta: document.getElementById("kta2").value,
+        dpc: document.getElementById("dpc2").value,
+        dprt: document.getElementById("dprt2").value
       };
-      reader.readAsDataURL(file);
+
+      // Tampilkan Modal Popup
+      document.getElementById("reviewModal").classList.add("active");
     });
 
     function closeModal() {
@@ -464,7 +439,7 @@
       })
       .finally(() => {
         confirmBtn.disabled = false;
-        confirmBtn.innerText = "Upload Data";
+        confirmBtn.innerText = "Kirim Data";
       });
     });
 
