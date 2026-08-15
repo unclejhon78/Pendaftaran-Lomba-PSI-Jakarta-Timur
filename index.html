@@ -104,11 +104,25 @@
     }
     .status {
       margin-top: 15px;
+      padding: 12px;
+      border-radius: 5px;
       text-align: center;
       font-weight: 600;
+      display: none;
     }
-    .success { color: #28a745; }
-    .error { color: #dc3545; }
+    .status.active {
+      display: block;
+    }
+    .success { 
+      color: #155724; 
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+    .error { 
+      color: #721c24; 
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+    }
 
     /* Table & Controls Styles (Tab 3) */
     .search-box {
@@ -259,7 +273,7 @@
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab(event, 'tab1')">Form Lomba Foto DPC</button>
       <button class="tab-btn" onclick="switchTab(event, 'tab2')">Form Pendaftaran Peserta</button>
-      <button class="tab-btn" onclick="switchTab(event, 'tab3')">List Data Peserta</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab3')">List Peserta Lomba</button>
     </div>
 
     <!-- TAB 1: FORM LOMBA FOTO -->
@@ -319,7 +333,7 @@
       <div id="status2" class="status"></div>
     </div>
 
-    <!-- TAB 3: LIST Data Peserta -->
+    <!-- TAB 3: LIST PESERTA LOMBA -->
     <div id="tab3" class="tab-content">
       <h3 style="margin-top:0; color:#444; font-size: 16px;">Daftar Peserta Terdaftar</h3>
       
@@ -341,7 +355,7 @@
           </thead>
           <tbody id="pesertaTableBody">
             <tr>
-              <td colspan="5" style="text-align: center; color: #888;">Memuat Data Peserta...</td>
+              <td colspan="5" style="text-align: center; color: #888;">Memuat data peserta...</td>
             </tr>
           </tbody>
         </table>
@@ -364,7 +378,7 @@
       <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Pastikan seluruh informasi di bawah ini sudah benar sebelum mengirimkan data.</p>
       
       <div class="reg-number-box">
-        No. Registrasi: <span id="revRegNum">-</span>
+        No. Registrasi: <span id="revRegNum">Otomatis Dibuat Sistem</span>
       </div>
 
       <div class="review-item"><strong>Nama Lengkap:</strong> <span id="revNama"></span></div>
@@ -396,13 +410,11 @@
       "Pulo Gadung": ["Cipinang", "Jati", "Jatinegara", "Kayu Putih", "Pisangan Timur", "Pulo Gadung", "Rawamangun"]
     };
 
-    // Variable global untuk paginasi & pencarian
     let rawPesertaData = [];
     let filteredPesertaData = [];
     let currentPage = 1;
     const rowsPerPage = 20;
 
-    // Fungsi Tab Switch
     function switchTab(evt, tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -415,7 +427,6 @@
       }
     }
 
-    // Dropdown Setups
     function setupSingleDropdown(dpcId) {
       const dpcSelect = document.getElementById(dpcId);
       dpcSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
@@ -461,25 +472,9 @@
     setupSingleDropdown("dpc1");
     setupDropdowns("dpc2", "dprt2");
 
-    // LOGIKA PENOMORAN OTOMATIS
-    function generateRegistrationNumber() {
-      let currentCounter = localStorage.getItem("regCounter");
-      if (!currentCounter) {
-        currentCounter = 1;
-      } else {
-        currentCounter = parseInt(currentCounter) + 1;
-      }
-      const paddedNumber = String(currentCounter).padStart(4, '0');
-      return {
-        counter: currentCounter,
-        code: `HUT81RI_PSIJAKTIM_${paddedNumber}`
-      };
-    }
-
-    // FUNGSI UTAMA FETCH Data Peserta DARI SPREADSHEET
     function fetchPesertaData() {
       const tbody = document.getElementById("pesertaTableBody");
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat Data Peserta...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat data peserta...</td></tr>';
 
       fetch(SCRIPT_URL, {
         method: "GET",
@@ -488,24 +483,23 @@
         .then(res => res.json())
         .then(resData => {
           if (resData.status === "success" && resData.data && resData.data.length > 0) {
-            rawPesertaData = resData.data.reverse(); // Urutkan dari yang terbaru
+            rawPesertaData = resData.data.reverse();
             filteredPesertaData = [...rawPesertaData];
             currentPage = 1;
             renderPaginatedTable();
           } else {
             rawPesertaData = [];
             filteredPesertaData = [];
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada Data Peserta terdaftar.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta terdaftar.</td></tr>';
             updatePaginationControls();
           }
         })
         .catch(err => {
-          console.error("Gagal mengambil Data Peserta:", err);
+          console.error("Gagal mengambil data peserta:", err);
           tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Gagal memuat data dari Spreadsheet. Pastikan Deploy Web App disetting "Anyone".</td></tr>';
         });
     }
 
-    // MENAMPILKAN TABEL SESUAI PAGINASI & SEARCH
     function renderPaginatedTable() {
       const tbody = document.getElementById("pesertaTableBody");
       tbody.innerHTML = "";
@@ -535,7 +529,6 @@
       updatePaginationControls();
     }
 
-    // PENCARIAN (NAMA, KECAMATAN, KELURAHAN)
     function handleSearch() {
       const query = document.getElementById("searchInput").value.toLowerCase().trim();
       
@@ -546,11 +539,10 @@
         return nama.includes(query) || dpc.includes(query) || dprt.includes(query);
       });
 
-      currentPage = 1; // Reset ke halaman pertama saat filter berubah
+      currentPage = 1;
       renderPaginatedTable();
     }
 
-    // UPDATE TOMBOL & KETERANGAN PAGINASI
     function updatePaginationControls() {
       const totalPages = Math.ceil(filteredPesertaData.length / rowsPerPage) || 1;
       document.getElementById("pageInfo").innerText = `Halaman ${currentPage} dari ${totalPages}`;
@@ -575,72 +567,67 @@
     }
 
     let tempPayloadTab2 = null;
-    let pendingCounter = null;
 
-    // EVENT SUBMIT TAB 2 -> BUKA POPUP REVIEW
-document.getElementById("dataForm2").addEventListener("submit", function(e) {
-  e.preventDefault();
+    // EVENT SUBMIT TAB 2 -> BUKA MODAL
+    document.getElementById("dataForm2").addEventListener("submit", function(e) {
+      e.preventDefault();
 
-  // Tampilkan tanda 'Otomatis' pada modal review sebelum dikirim ke server
-  document.getElementById("revRegNum").innerText = "Otomatis dibuat sistem";
-  document.getElementById("revNama").innerText = document.getElementById("nama2").value;
-  document.getElementById("revJabatan").innerText = document.getElementById("jabatan2").value;
-  document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
-  document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
+      document.getElementById("revNama").innerText = document.getElementById("nama2").value;
+      document.getElementById("revJabatan").innerText = document.getElementById("jabatan2").value;
+      document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
+      document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
 
-  tempPayloadTab2 = {
-    formType: "pendaftaran_peserta",
-    nama: document.getElementById("nama2").value,
-    jabatan: document.getElementById("jabatan2").value,
-    dpc: document.getElementById("dpc2").value,
-    dprt: document.getElementById("dprt2").value
-  };
+      tempPayloadTab2 = {
+        formType: "pendaftaran_peserta",
+        nama: document.getElementById("nama2").value,
+        jabatan: document.getElementById("jabatan2").value,
+        dpc: document.getElementById("dpc2").value,
+        dprt: document.getElementById("dprt2").value
+      };
 
-  document.getElementById("reviewModal").classList.add("active");
-});
+      document.getElementById("reviewModal").classList.add("active");
+    });
 
-// KONFIRMASI UPLOAD PADA MODAL TAB 2
-document.getElementById("confirmUploadBtn").addEventListener("click", function() {
-  if (!tempPayloadTab2) return;
-
-  const confirmBtn = this;
-  const statusDiv = document.getElementById("status2");
-  
-  confirmBtn.disabled = true;
-  confirmBtn.innerText = "Mengirim...";
-  statusDiv.className = "status";
-  statusDiv.innerText = "Sedang mengunggah data pendaftaran...";
-
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(tempPayloadTab2)
-  })
-  .then(res => res.json())
-  .then(resData => {
-    closeModal();
-    if (resData.status === "success") {
-      statusDiv.className = "status success";
-      statusDiv.innerText = `Pendaftaran Berhasil! No Registrasi Anda: ${resData.noRegister}`;
-      document.getElementById("dataForm2").reset();
-      document.getElementById("dprt2").disabled = true;
-      document.getElementById("dprt2").innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
-    } else {
-      statusDiv.className = "status error";
-      statusDiv.innerText = "Gagal menyimpan data: " + resData.message;
+    function closeModal() {
+      document.getElementById("reviewModal").classList.remove("active");
     }
-  })
-  .catch(err => {
-    closeModal();
-    statusDiv.className = "status error";
-    statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
-    console.error(err);
-  })
-  .finally(() => {
-    confirmBtn.disabled = false;
-    confirmBtn.innerText = "Kirim Data";
-  });
-});
+
+    // KONFIRMASI UPLOAD MODAL TAB 2
+    document.getElementById("confirmUploadBtn").addEventListener("click", function() {
+      if (!tempPayloadTab2) return;
+
+      const confirmBtn = this;
+      const statusDiv = document.getElementById("status2");
+      
+      confirmBtn.disabled = true;
+      confirmBtn.innerText = "Mengirim...";
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(tempPayloadTab2)
+      })
+      .then(() => {
+        closeModal();
+        statusDiv.className = "status success active";
+        statusDiv.innerHTML = "🎉 <strong>Pendaftaran Berhasil Diproses!</strong><br>Data Anda sudah berhasil masuk ke sistem.";
+        
+        document.getElementById("dataForm2").reset();
+        document.getElementById("dprt2").disabled = true;
+        document.getElementById("dprt2").innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
+      })
+      .catch(err => {
+        closeModal();
+        statusDiv.className = "status error active";
+        statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
+        console.error(err);
+      })
+      .finally(() => {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "Kirim Data";
+      });
+    });
 
     // HANDLE KIRIM FORM TAB 1 (Lomba Foto)
     document.getElementById("dataForm1").addEventListener("submit", function(e) {
@@ -652,7 +639,7 @@ document.getElementById("confirmUploadBtn").addEventListener("click", function()
       const file = fileInput.files[0];
 
       submitBtn.disabled = true;
-      statusDiv.className = "status";
+      statusDiv.className = "status active";
       statusDiv.innerText = "Mengunggah foto dan menyimpan data...";
 
       const reader = new FileReader();
@@ -669,16 +656,16 @@ document.getElementById("confirmUploadBtn").addEventListener("click", function()
         fetch(SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(payload)
         })
         .then(() => {
-          statusDiv.className = "status success";
+          statusDiv.className = "status success active";
           statusDiv.innerText = "Data & Foto berhasil disimpan!";
           document.getElementById("dataForm1").reset();
         })
         .catch(err => {
-          statusDiv.className = "status error";
+          statusDiv.className = "status error active";
           statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
           console.error(err);
         })
@@ -692,7 +679,7 @@ document.getElementById("confirmUploadBtn").addEventListener("click", function()
       }
     });
 
-    // Load data awal saat halaman dibuka
+    // Load data awal
     fetchPesertaData();
   </script>
 
