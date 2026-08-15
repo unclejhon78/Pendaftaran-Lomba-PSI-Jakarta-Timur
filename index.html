@@ -577,75 +577,70 @@
     let tempPayloadTab2 = null;
     let pendingCounter = null;
 
-    // EVENT SUBMIT TAB 2 -> MODAL REVIEW
-    document.getElementById("dataForm2").addEventListener("submit", function(e) {
-      e.preventDefault();
+    // EVENT SUBMIT TAB 2 -> BUKA POPUP REVIEW
+document.getElementById("dataForm2").addEventListener("submit", function(e) {
+  e.preventDefault();
 
-      const regData = generateRegistrationNumber();
-      pendingCounter = regData.counter;
+  // Tampilkan tanda 'Otomatis' pada modal review sebelum dikirim ke server
+  document.getElementById("revRegNum").innerText = "Otomatis dibuat sistem";
+  document.getElementById("revNama").innerText = document.getElementById("nama2").value;
+  document.getElementById("revJabatan").innerText = document.getElementById("jabatan2").value;
+  document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
+  document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
 
-      document.getElementById("revRegNum").innerText = regData.code;
-      document.getElementById("revNama").innerText = document.getElementById("nama2").value;
-      document.getElementById("revJabatan").innerText = document.getElementById("jabatan2").value;
-      document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
-      document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
+  tempPayloadTab2 = {
+    formType: "pendaftaran_peserta",
+    nama: document.getElementById("nama2").value,
+    jabatan: document.getElementById("jabatan2").value,
+    dpc: document.getElementById("dpc2").value,
+    dprt: document.getElementById("dprt2").value
+  };
 
-      tempPayloadTab2 = {
-        formType: "pendaftaran_peserta",
-        noRegister: regData.code,
-        nama: document.getElementById("nama2").value,
-        jabatan: document.getElementById("jabatan2").value,
-        dpc: document.getElementById("dpc2").value,
-        dprt: document.getElementById("dprt2").value
-      };
+  document.getElementById("reviewModal").classList.add("active");
+});
 
-      document.getElementById("reviewModal").classList.add("active");
-    });
+// KONFIRMASI UPLOAD PADA MODAL TAB 2
+document.getElementById("confirmUploadBtn").addEventListener("click", function() {
+  if (!tempPayloadTab2) return;
 
-    function closeModal() {
-      document.getElementById("reviewModal").classList.remove("active");
+  const confirmBtn = this;
+  const statusDiv = document.getElementById("status2");
+  
+  confirmBtn.disabled = true;
+  confirmBtn.innerText = "Mengirim...";
+  statusDiv.className = "status";
+  statusDiv.innerText = "Sedang mengunggah data pendaftaran...";
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(tempPayloadTab2)
+  })
+  .then(res => res.json())
+  .then(resData => {
+    closeModal();
+    if (resData.status === "success") {
+      statusDiv.className = "status success";
+      statusDiv.innerText = `Pendaftaran Berhasil! No Registrasi Anda: ${resData.noRegister}`;
+      document.getElementById("dataForm2").reset();
+      document.getElementById("dprt2").disabled = true;
+      document.getElementById("dprt2").innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
+    } else {
+      statusDiv.className = "status error";
+      statusDiv.innerText = "Gagal menyimpan data: " + resData.message;
     }
-
-    // KONFIRMASI UPLOAD PADA MODAL TAB 2
-    document.getElementById("confirmUploadBtn").addEventListener("click", function() {
-      if (!tempPayloadTab2) return;
-
-      const confirmBtn = this;
-      const statusDiv = document.getElementById("status2");
-      
-      confirmBtn.disabled = true;
-      confirmBtn.innerText = "Mengirim...";
-      statusDiv.className = "status";
-      statusDiv.innerText = "Sedang mengunggah data pendaftaran...";
-
-      localStorage.setItem("regCounter", pendingCounter);
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tempPayloadTab2)
-      })
-      .then(() => {
-        closeModal();
-        statusDiv.className = "status success";
-        statusDiv.innerText = `Pendaftaran Berhasil! No Registrasi Anda: ${tempPayloadTab2.noRegister}`;
-        
-        document.getElementById("dataForm2").reset();
-        document.getElementById("dprt2").disabled = true;
-        document.getElementById("dprt2").innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
-      })
-      .catch(err => {
-        closeModal();
-        statusDiv.className = "status error";
-        statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
-        console.error(err);
-      })
-      .finally(() => {
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = "Kirim Data";
-      });
-    });
+  })
+  .catch(err => {
+    closeModal();
+    statusDiv.className = "status error";
+    statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
+    console.error(err);
+  })
+  .finally(() => {
+    confirmBtn.disabled = false;
+    confirmBtn.innerText = "Kirim Data";
+  });
+});
 
     // HANDLE KIRIM FORM TAB 1 (Lomba Foto)
     document.getElementById("dataForm1").addEventListener("submit", function(e) {
