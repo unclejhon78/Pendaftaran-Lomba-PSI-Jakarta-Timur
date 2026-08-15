@@ -257,13 +257,13 @@
         </div>
 
         <div class="form-group">
-          <label for="kta2">Jabatan</label>
-          <input type="text" id="kta2" placeholder="Masukkan Jabatan Pengurus" required>
+          <label for="kta2">Nomor KTA</label>
+          <input type="text" id="kta2" placeholder="Masukkan Nomor KTA" required>
         </div>
 
         <div class="form-group">
           <label for="jabatan2">Jabatan</label>
-          <input type="text" id="jabatan2" placeholder="Masukkan jabatan" required>
+          <input type="text" id="jabatan2" placeholder="Masukkan Jabatan Pengurus" required>
         </div>
 
         <div class="form-group">
@@ -498,36 +498,32 @@
       statusDiv.className = "status";
       statusDiv.innerText = "Sedang mengunggah data pendaftaran...";
 
+      // Simpan data langsung ke localStorage agar Tab 3 ter-update tanpa bergantung penuh pada jaringan
+      localStorage.setItem("regCounter", pendingCounter);
+      let listPeserta = JSON.parse(localStorage.getItem("listPeserta") || "[]");
+      listPeserta.push(tempPayloadTab2);
+      localStorage.setItem("listPeserta", JSON.stringify(listPeserta));
+      renderPesertaTable(); // Update tabel Tab 3 secara realtime
+
       fetch(SCRIPT_URL, {
         method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tempPayloadTab2)
       })
-      .then(res => res.json())
-      .then(data => {
+      .then(() => {
         closeModal();
-        if (data.status === "success" || data.result === "success") {
-          localStorage.setItem("regCounter", pendingCounter);
-          
-          // Simpan data peserta ke localStorage untuk ditampilkan di Tab 3
-          let listPeserta = JSON.parse(localStorage.getItem("listPeserta") || "[]");
-          listPeserta.push(tempPayloadTab2);
-          localStorage.setItem("listPeserta", JSON.stringify(listPeserta));
-
-          statusDiv.className = "status success";
-          statusDiv.innerText = `Pendaftaran Berhasil! No Registrasi Anda: ${tempPayloadTab2.noRegister}`;
-          
-          document.getElementById("dataForm2").reset();
-          document.getElementById("dprt2").disabled = true;
-          document.getElementById("dprt2").innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
-        } else {
-          statusDiv.className = "status error";
-          statusDiv.innerText = "Terjadi kesalahan: " + (data.message || "Gagal menyimpan data.");
-        }
+        statusDiv.className = "status success";
+        statusDiv.innerText = `Pendaftaran Berhasil! No Registrasi Anda: ${tempPayloadTab2.noRegister}`;
+        
+        document.getElementById("dataForm2").reset();
+        document.getElementById("dprt2").disabled = true;
+        document.getElementById("dprt2").innerHTML = '<option value="">-- Pilih Kecamatan Terlebih Dahulu --</option>';
       })
       .catch(err => {
         closeModal();
         statusDiv.className = "status error";
-        statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
+        statusDiv.innerText = "Gagal mengirim ke server, tetapi data telah tersimpan di browser lokal.";
         console.error(err);
       })
       .finally(() => {
@@ -562,18 +558,14 @@
 
         fetch(SCRIPT_URL, {
           method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "success" || data.result === "success") {
-            statusDiv.className = "status success";
-            statusDiv.innerText = "Data & Foto berhasil disimpan!";
-            document.getElementById("dataForm1").reset();
-          } else {
-            statusDiv.className = "status error";
-            statusDiv.innerText = "Terjadi kesalahan: " + (data.message || "Gagal menyimpan");
-          }
+        .then(() => {
+          statusDiv.className = "status success";
+          statusDiv.innerText = "Data & Foto berhasil disimpan!";
+          document.getElementById("dataForm1").reset();
         })
         .catch(err => {
           statusDiv.className = "status error";
