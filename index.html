@@ -22,7 +22,7 @@
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 550px;
+      max-width: 650px;
     }
     h2 {
       margin-top: 0;
@@ -43,7 +43,7 @@
       background: none;
       border: none;
       border-bottom: 3px solid transparent;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: #666;
       cursor: pointer;
@@ -109,6 +109,29 @@
     }
     .success { color: #28a745; }
     .error { color: #dc3545; }
+
+    /* Table Styles (Tab 3) */
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    table th {
+      background-color: #007bff;
+      color: white;
+    }
+    table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
 
     /* Styles Pop-up Modal */
     .modal-overlay {
@@ -195,8 +218,9 @@
 
     <!-- Navigation Tab -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab(event, 'tab1')">Form Lomba Foto DPC</button>
-      <button class="tab-btn" onclick="switchTab(event, 'tab2')">Form Pendaftaran Peserta Lomba</button>
+      <button class="tab-btn active" onclick="switchTab(event, 'tab1')">Form Lomba Foto DPRt</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab2')">Form Pendaftaran Peserta</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab3')">List Peserta Lomba</button>
     </div>
 
     <!-- TAB 1: FORM LOMBA FOTO -->
@@ -204,7 +228,7 @@
       <form id="dataForm1">
         <div class="form-group">
           <label for="nama1">Nama Lengkap</label>
-          <input type="text" id="nama1" placeholder="Nama Lengkap Pengirim" required>
+          <input type="text" id="nama1" placeholder="Masukkan Nama Pengirim" required>
         </div>
 
         <div class="form-group">
@@ -233,8 +257,13 @@
         </div>
 
         <div class="form-group">
-          <label for="kta2">JABATAN</label>
+          <label for="kta2">Jabatan</label>
           <input type="text" id="kta2" placeholder="Masukkan Jabatan Pengurus" required>
+        </div>
+
+        <div class="form-group">
+          <label for="jabatan2">Jabatan</label>
+          <input type="text" id="jabatan2" placeholder="Masukkan jabatan" required>
         </div>
 
         <div class="form-group">
@@ -256,6 +285,29 @@
       <div id="status2" class="status"></div>
     </div>
 
+    <!-- TAB 3: LIST PESERTA LOMBA -->
+    <div id="tab3" class="tab-content">
+      <h3 style="margin-top:0; color:#444; font-size: 16px;">Daftar Peserta Terdaftar</h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>No. Registrasi</th>
+              <th>Nama Lengkap</th>
+              <th>Jabatan</th>
+              <th>Kecamatan</th>
+              <th>Kelurahan</th>
+            </tr>
+          </thead>
+          <tbody id="pesertaTableBody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
   <!-- POPUP MODAL REVIEW DATA TAB 2 -->
@@ -270,6 +322,7 @@
 
       <div class="review-item"><strong>Nama Lengkap:</strong> <span id="revNama"></span></div>
       <div class="review-item"><strong>No. KTA:</strong> <span id="revKta"></span></div>
+      <div class="review-item"><strong>Jabatan:</strong> <span id="revJabatan"></span></div>
       <div class="review-item"><strong>Kecamatan:</strong> <span id="revDpc"></span></div>
       <div class="review-item"><strong>Kelurahan:</strong> <span id="revDprt"></span></div>
 
@@ -304,6 +357,10 @@
       
       document.getElementById(tabId).classList.add('active');
       evt.currentTarget.classList.add('active');
+
+      if (tabId === 'tab3') {
+        renderPesertaTable();
+      }
     }
 
     // Inisialisasi Dropdown Kecamatan saja untuk Tab 1
@@ -368,6 +425,30 @@
       };
     }
 
+    // LOGIKA MENAMPILKAN TABEL PESERTA (TAB 3)
+    function renderPesertaTable() {
+      const listPeserta = JSON.parse(localStorage.getItem("listPeserta") || "[]");
+      const tbody = document.getElementById("pesertaTableBody");
+      
+      if (listPeserta.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = "";
+      listPeserta.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${item.noRegister}</strong></td>
+          <td>${item.nama}</td>
+          <td>${item.jabatan}</td>
+          <td>${item.dpc}</td>
+          <td>${item.dprt}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     let tempPayloadTab2 = null;
     let pendingCounter = null;
 
@@ -382,15 +463,17 @@
       document.getElementById("revRegNum").innerText = regData.code;
       document.getElementById("revNama").innerText = document.getElementById("nama2").value;
       document.getElementById("revKta").innerText = document.getElementById("kta2").value;
+      document.getElementById("revJabatan").innerText = document.getElementById("jabatan2").value;
       document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
       document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
 
-      // Buat Payload tanpa File & Email
+      // Buat Payload
       tempPayloadTab2 = {
-        formType: "pendaftaran_peserta", // Penanda untuk Tab Peserta Lomba
+        formType: "pendaftaran_peserta",
         noRegister: regData.code,
         nama: document.getElementById("nama2").value,
         noKta: document.getElementById("kta2").value,
+        jabatan: document.getElementById("jabatan2").value,
         dpc: document.getElementById("dpc2").value,
         dprt: document.getElementById("dprt2").value
       };
@@ -425,6 +508,11 @@
         if (data.status === "success" || data.result === "success") {
           localStorage.setItem("regCounter", pendingCounter);
           
+          // Simpan data peserta ke localStorage untuk ditampilkan di Tab 3
+          let listPeserta = JSON.parse(localStorage.getItem("listPeserta") || "[]");
+          listPeserta.push(tempPayloadTab2);
+          localStorage.setItem("listPeserta", JSON.stringify(listPeserta));
+
           statusDiv.className = "status success";
           statusDiv.innerText = `Pendaftaran Berhasil! No Registrasi Anda: ${tempPayloadTab2.noRegister}`;
           
@@ -464,7 +552,7 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         const payload = {
-          formType: "lomba_foto", // Penanda untuk Tab Lomba Foto
+          formType: "lomba_foto",
           nama: document.getElementById("nama1").value,
           dpc: document.getElementById("dpc1").value,
           fileName: file.name,
@@ -501,6 +589,9 @@
         reader.readAsDataURL(file);
       }
     });
+
+    // Load data awal saat halaman dibuka
+    renderPesertaTable();
   </script>
 
 </body>
