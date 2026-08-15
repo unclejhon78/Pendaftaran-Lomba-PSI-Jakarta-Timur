@@ -215,13 +215,6 @@
         </div>
 
         <div class="form-group">
-          <label for="dprt1">DPRt (Kelurahan)</label>
-          <select id="dprt1" required disabled>
-            <option value="">-- Pilih DPC Terlebih Dahulu --</option>
-          </select>
-        </div>
-
-        <div class="form-group">
           <label for="foto1">Upload Foto</label>
           <input type="file" id="foto1" accept="image/*" required>
         </div>
@@ -313,7 +306,19 @@
       evt.currentTarget.classList.add('active');
     }
 
-    // Inisialisasi Dropdown
+    // Inisialisasi Dropdown Kecamatan saja untuk Tab 1
+    function setupSingleDropdown(dpcId) {
+      const dpcSelect = document.getElementById(dpcId);
+      dpcSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+      for (let dpc in dataWilayah) {
+        let option = document.createElement("option");
+        option.value = dpc;
+        option.textContent = dpc;
+        dpcSelect.appendChild(option);
+      }
+    }
+
+    // Inisialisasi Dropdown Bertingkat (Kecamatan + Kelurahan) untuk Tab 2
     function setupDropdowns(dpcId, dprtId) {
       const dpcSelect = document.getElementById(dpcId);
       const dprtSelect = document.getElementById(dprtId);
@@ -345,7 +350,7 @@
       });
     }
 
-    setupDropdowns("dpc1", "dprt1");
+    setupSingleDropdown("dpc1");
     setupDropdowns("dpc2", "dprt2");
 
     // LOGIKA PENOMORAN OTOMATIS (HUT81RI_PSIJAKTIM_0001)
@@ -462,7 +467,6 @@
           formType: "lomba_foto", // Penanda untuk Tab Lomba Foto
           nama: document.getElementById("nama1").value,
           dpc: document.getElementById("dpc1").value,
-          dprt: document.getElementById("dprt1").value,
           fileName: file.name,
           fileType: file.type,
           fileData: evt.target.result
@@ -478,8 +482,6 @@
             statusDiv.className = "status success";
             statusDiv.innerText = "Data & Foto berhasil disimpan!";
             document.getElementById("dataForm1").reset();
-            document.getElementById("dprt1").disabled = true;
-            document.getElementById("dprt1").innerHTML = '<option value="">-- Pilih DPC Terlebih Dahulu --</option>';
           } else {
             statusDiv.className = "status error";
             statusDiv.innerText = "Terjadi kesalahan: " + (data.message || "Gagal menyimpan");
