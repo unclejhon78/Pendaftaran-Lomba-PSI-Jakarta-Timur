@@ -257,11 +257,6 @@
         </div>
 
         <div class="form-group">
-          <label for="kta2">Nomor KTA</label>
-          <input type="text" id="kta2" placeholder="Masukkan Nomor KTA" required>
-        </div>
-
-        <div class="form-group">
           <label for="jabatan2">Jabatan</label>
           <input type="text" id="jabatan2" placeholder="Masukkan Jabatan Pengurus" required>
         </div>
@@ -321,7 +316,6 @@
       </div>
 
       <div class="review-item"><strong>Nama Lengkap:</strong> <span id="revNama"></span></div>
-      <div class="review-item"><strong>No. KTA:</strong> <span id="revKta"></span></div>
       <div class="review-item"><strong>Jabatan:</strong> <span id="revJabatan"></span></div>
       <div class="review-item"><strong>Kecamatan:</strong> <span id="revDpc"></span></div>
       <div class="review-item"><strong>Kelurahan:</strong> <span id="revDprt"></span></div>
@@ -334,7 +328,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD0LaqLHL5bUDMRbj8hL64cTPLwZNxv4f9E-Y6gQQKaFCzb_i0oRaJQYzy9dx2yWe-kA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyws40yaaCKcJbtaSOf9zjsEYEn99XgFrPfwjSCUZDczqfnZyqfYw5eL2FzSobitE8lJw/exec";
 
     // Data Wilayah Jakarta Timur
     const dataWilayah = {
@@ -462,7 +456,6 @@
       // Isi Data Pop-up Modal
       document.getElementById("revRegNum").innerText = regData.code;
       document.getElementById("revNama").innerText = document.getElementById("nama2").value;
-      document.getElementById("revKta").innerText = document.getElementById("kta2").value;
       document.getElementById("revJabatan").innerText = document.getElementById("jabatan2").value;
       document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
       document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
@@ -472,7 +465,6 @@
         formType: "pendaftaran_peserta",
         noRegister: regData.code,
         nama: document.getElementById("nama2").value,
-        noKta: document.getElementById("kta2").value,
         jabatan: document.getElementById("jabatan2").value,
         dpc: document.getElementById("dpc2").value,
         dprt: document.getElementById("dprt2").value
