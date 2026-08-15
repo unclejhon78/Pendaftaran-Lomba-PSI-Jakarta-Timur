@@ -110,7 +110,17 @@
     .success { color: #28a745; }
     .error { color: #dc3545; }
 
-    /* Table Styles (Tab 3) */
+    /* Table & Controls Styles (Tab 3) */
+    .search-box {
+      margin-bottom: 12px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #007bff;
+      border-radius: 5px;
+      font-size: 14px;
+    }
     .table-responsive {
       overflow-x: auto;
       margin-top: 10px;
@@ -131,6 +141,35 @@
     }
     table tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+
+    /* Pagination Controls */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+    .pagination-btn {
+      padding: 6px 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .pagination-btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .page-info {
+      font-size: 13px;
+      color: #555;
+      font-weight: 600;
     }
 
     /* Styles Pop-up Modal */
@@ -283,6 +322,12 @@
     <!-- TAB 3: LIST PESERTA LOMBA -->
     <div id="tab3" class="tab-content">
       <h3 style="margin-top:0; color:#444; font-size: 16px;">Daftar Peserta Terdaftar</h3>
+      
+      <!-- Input Pencarian -->
+      <div class="search-box">
+        <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="🔍 Cari Nama, Kecamatan, atau Kelurahan...">
+      </div>
+
       <div class="table-responsive">
         <table>
           <thead>
@@ -296,10 +341,17 @@
           </thead>
           <tbody id="pesertaTableBody">
             <tr>
-              <td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta.</td>
+              <td colspan="5" style="text-align: center; color: #888;">Memuat data peserta...</td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Control Paginasi -->
+      <div class="pagination">
+        <button class="pagination-btn" id="prevBtn" onclick="prevPage()">← Sebelumnya</button>
+        <span class="page-info" id="pageInfo">Halaman 1</span>
+        <button class="pagination-btn" id="nextBtn" onclick="nextPage()">Berikutnya →</button>
       </div>
     </div>
 
@@ -344,6 +396,12 @@
       "Pulo Gadung": ["Cipinang", "Jati", "Jatinegara", "Kayu Putih", "Pisangan Timur", "Pulo Gadung", "Rawamangun"]
     };
 
+    // Variable global untuk paginasi & pencarian
+    let rawPesertaData = [];
+    let filteredPesertaData = [];
+    let currentPage = 1;
+    const rowsPerPage = 20;
+
     // Fungsi Tab Switch
     function switchTab(evt, tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -353,11 +411,11 @@
       evt.currentTarget.classList.add('active');
 
       if (tabId === 'tab3') {
-        renderPesertaTable();
+        fetchPesertaData();
       }
     }
 
-    // Inisialisasi Dropdown Kecamatan saja untuk Tab 1
+    // Dropdown Setups
     function setupSingleDropdown(dpcId) {
       const dpcSelect = document.getElementById(dpcId);
       dpcSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
@@ -369,7 +427,6 @@
       }
     }
 
-    // Inisialisasi Dropdown Bertingkat (Kecamatan + Kelurahan) untuk Tab 2
     function setupDropdowns(dpcId, dprtId) {
       const dpcSelect = document.getElementById(dpcId);
       const dprtSelect = document.getElementById(dprtId);
@@ -404,7 +461,7 @@
     setupSingleDropdown("dpc1");
     setupDropdowns("dpc2", "dprt2");
 
-    // LOGIKA PENOMORAN OTOMATIS (HUT81RI_PSIJAKTIM_0001)
+    // LOGIKA PENOMORAN OTOMATIS
     function generateRegistrationNumber() {
       let currentCounter = localStorage.getItem("regCounter");
       if (!currentCounter) {
@@ -419,60 +476,120 @@
       };
     }
 
-    // LOGIKA MENAMPILKAN TABEL PESERTA DARI SPREADSHEET (REALTIME ALL DEVICES)
-function renderPesertaTable() {
-  const tbody = document.getElementById("pesertaTableBody");
-  tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat data peserta...</td></tr>';
+    // FUNGSI UTAMA FETCH DATA PESERTA DARI SPREADSHEET
+    function fetchPesertaData() {
+      const tbody = document.getElementById("pesertaTableBody");
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Memuat data peserta...</td></tr>';
 
-  // Google Apps Script melakukan redirect 302 saat merespons GET, redirect: "follow" wajib ada
-  fetch(SCRIPT_URL, {
-    method: "GET",
-    redirect: "follow"
-  })
-    .then(res => res.json())
-    .then(resData => {
-      if (resData.status === "success" && resData.data && resData.data.length > 0) {
-        tbody.innerHTML = "";
-        // Tampilkan dari data terbaru (reverse)
-        resData.data.reverse().forEach(item => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td><strong>${item.noRegister || '-'}</strong></td>
-            <td>${item.nama || '-'}</td>
-            <td>${item.jabatan || '-'}</td>
-            <td>${item.dpc || '-'}</td>
-            <td>${item.dprt || '-'}</td>
-          `;
-          tbody.appendChild(tr);
+      fetch(SCRIPT_URL, {
+        method: "GET",
+        redirect: "follow"
+      })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.status === "success" && resData.data && resData.data.length > 0) {
+            rawPesertaData = resData.data.reverse(); // Urutkan dari yang terbaru
+            filteredPesertaData = [...rawPesertaData];
+            currentPage = 1;
+            renderPaginatedTable();
+          } else {
+            rawPesertaData = [];
+            filteredPesertaData = [];
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta terdaftar.</td></tr>';
+            updatePaginationControls();
+          }
+        })
+        .catch(err => {
+          console.error("Gagal mengambil data peserta:", err);
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Gagal memuat data dari Spreadsheet. Pastikan Deploy Web App disetting "Anyone".</td></tr>';
         });
-      } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Belum ada data peserta terdaftar.</td></tr>';
+    }
+
+    // MENAMPILKAN TABEL SESUAI PAGINASI & SEARCH
+    function renderPaginatedTable() {
+      const tbody = document.getElementById("pesertaTableBody");
+      tbody.innerHTML = "";
+
+      if (filteredPesertaData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Data tidak ditemukan.</td></tr>';
+        updatePaginationControls();
+        return;
       }
-    })
-    .catch(err => {
-      console.error("Gagal mengambil data peserta:", err);
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc3545;">Gagal memuat data dari Spreadsheet. Pastikan Deploy Web App disetting "Anyone".</td></tr>';
-    });
-}
+
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = filteredPesertaData.slice(start, end);
+
+      pageData.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${item.noRegister || '-'}</strong></td>
+          <td>${item.nama || '-'}</td>
+          <td>${item.jabatan || '-'}</td>
+          <td>${item.dpc || '-'}</td>
+          <td>${item.dprt || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updatePaginationControls();
+    }
+
+    // PENCARIAN (NAMA, KECAMATAN, KELURAHAN)
+    function handleSearch() {
+      const query = document.getElementById("searchInput").value.toLowerCase().trim();
+      
+      filteredPesertaData = rawPesertaData.filter(item => {
+        const nama = (item.nama || "").toLowerCase();
+        const dpc = (item.dpc || "").toLowerCase();
+        const dprt = (item.dprt || "").toLowerCase();
+        return nama.includes(query) || dpc.includes(query) || dprt.includes(query);
+      });
+
+      currentPage = 1; // Reset ke halaman pertama saat filter berubah
+      renderPaginatedTable();
+    }
+
+    // UPDATE TOMBOL & KETERANGAN PAGINASI
+    function updatePaginationControls() {
+      const totalPages = Math.ceil(filteredPesertaData.length / rowsPerPage) || 1;
+      document.getElementById("pageInfo").innerText = `Halaman ${currentPage} dari ${totalPages}`;
+      
+      document.getElementById("prevBtn").disabled = currentPage === 1;
+      document.getElementById("nextBtn").disabled = currentPage >= totalPages;
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(filteredPesertaData.length / rowsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderPaginatedTable();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPaginatedTable();
+      }
+    }
 
     let tempPayloadTab2 = null;
     let pendingCounter = null;
 
-    // EVENT SUBMIT TAB 2 -> BUKA POPUP REVIEW
+    // EVENT SUBMIT TAB 2 -> MODAL REVIEW
     document.getElementById("dataForm2").addEventListener("submit", function(e) {
       e.preventDefault();
 
       const regData = generateRegistrationNumber();
       pendingCounter = regData.counter;
 
-      // Isi Data Pop-up Modal
       document.getElementById("revRegNum").innerText = regData.code;
       document.getElementById("revNama").innerText = document.getElementById("nama2").value;
       document.getElementById("revJabatan").innerText = document.getElementById("jabatan2").value;
       document.getElementById("revDpc").innerText = document.getElementById("dpc2").value;
       document.getElementById("revDprt").innerText = document.getElementById("dprt2").value;
 
-      // Buat Payload
       tempPayloadTab2 = {
         formType: "pendaftaran_peserta",
         noRegister: regData.code,
@@ -482,7 +599,6 @@ function renderPesertaTable() {
         dprt: document.getElementById("dprt2").value
       };
 
-      // Tampilkan Modal Popup
       document.getElementById("reviewModal").classList.add("active");
     });
 
@@ -502,12 +618,7 @@ function renderPesertaTable() {
       statusDiv.className = "status";
       statusDiv.innerText = "Sedang mengunggah data pendaftaran...";
 
-      // Simpan data langsung ke localStorage agar Tab 3 ter-update tanpa bergantung penuh pada jaringan
       localStorage.setItem("regCounter", pendingCounter);
-      let listPeserta = JSON.parse(localStorage.getItem("listPeserta") || "[]");
-      listPeserta.push(tempPayloadTab2);
-      localStorage.setItem("listPeserta", JSON.stringify(listPeserta));
-      renderPesertaTable(); // Update tabel Tab 3 secara realtime
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -527,7 +638,7 @@ function renderPesertaTable() {
       .catch(err => {
         closeModal();
         statusDiv.className = "status error";
-        statusDiv.innerText = "Gagal mengirim ke server, tetapi data telah tersimpan di browser lokal.";
+        statusDiv.innerText = "Gagal mengirim data. Periksa koneksi internet Anda.";
         console.error(err);
       })
       .finally(() => {
@@ -587,7 +698,7 @@ function renderPesertaTable() {
     });
 
     // Load data awal saat halaman dibuka
-    renderPesertaTable();
+    fetchPesertaData();
   </script>
 
 </body>
